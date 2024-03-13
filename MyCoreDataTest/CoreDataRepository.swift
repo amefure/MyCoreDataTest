@@ -24,6 +24,14 @@ class CoreDataRepository {
         return container
     }()
     
+    /// メインスレッドで使用するContext
+    private func makeContext() -> NSManagedObjectContext {
+        let context = persistentContainer.viewContext
+        context.automaticallyMergesChangesFromParent = true
+        return context
+    }
+    
+    /// バックグラウンドスレッドで使用するContext
     private func makeBackgroundContext() -> NSManagedObjectContext {
         let context = persistentContainer.newBackgroundContext()
         context.automaticallyMergesChangesFromParent = true
@@ -32,28 +40,28 @@ class CoreDataRepository {
     
     /// 新規作成
     public func newEntity<T: NSManagedObject>(onBackgroundThread: Bool = false, completion: @escaping (T) -> Void) {
-        let context = onBackgroundThread ? makeBackgroundContext() : persistentContainer.viewContext
+        let context = onBackgroundThread ? makeBackgroundContext() : makeContext()
         context.perform {
             let entity = NSEntityDescription.entity(forEntityName: String(describing: T.self), in: context)!
-            let newObject = T(entity: entity, insertInto: nil)
+            let newObject = T(entity: entity, insertInto: context)
             completion(newObject)
         }
     }
     
     /// 追加処理
     public func insert(_ object: NSManagedObject, onBackgroundThread: Bool = false) {
-        let context = onBackgroundThread ? object.managedObjectContext ?? makeBackgroundContext() : persistentContainer.viewContext
-        context.insert(object)
+        let context = onBackgroundThread ? object.managedObjectContext ?? makeBackgroundContext() : makeContext()
         saveContext(context)
     }
     
     /// 削除処理
     public func delete(_ object: NSManagedObject, onBackgroundThread: Bool = false) {
-        let context = onBackgroundThread ? object.managedObjectContext ?? makeBackgroundContext() : persistentContainer.viewContext
+        let context = onBackgroundThread ? object.managedObjectContext ?? makeBackgroundContext() : makeContext()
         context.delete(object)
         saveContext(context)
     }
     
+    /// Contextに応じたSave
     private func saveContext(_ context: NSManagedObjectContext) {
         guard context.hasChanges else { return }
         do {
@@ -64,9 +72,9 @@ class CoreDataRepository {
         }
     }
 
-    /// 取得処理
+    /// 取得処理：fetchはContextを切り分ける必要がない？
     public func fetch<T: NSManagedObject>(completion: @escaping ([T]) -> Void) {
-        let context = persistentContainer.viewContext
+        let context = makeContext()
         let fetchRequest = NSFetchRequest<T>(entityName: String(describing: T.self))
 
         context.perform {
@@ -79,5 +87,4 @@ class CoreDataRepository {
             }
         }
     }
-
 }
