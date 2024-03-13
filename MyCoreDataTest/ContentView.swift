@@ -9,78 +9,108 @@ import SwiftUI
 import CoreData
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
-
+    
+    @State var persons: Array<Person> = []
+    
+    @State var companys: Array<Company> = []
+    
+    @State var selectTab = 0
+    
     var body: some View {
-        NavigationView {
+        
+        TabView(selection: $selectTab) {
             List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
+                Button {
+//                    DispatchQueue.global(qos: .background).async {
+                        addPerson()
+//                    }
+                } label: {
+                    Label("Add Item Person", systemImage: "plus")
+                }
+                
+                ForEach(companys, id: \.self) { item in
+                    HStack {
+                        if let name = item.id?.uuidString {
+                            Text(name)
+                        } else if item.name == "" {
+                            Text("NOne")
+                        } else {
+                            Text("nil")
+                        }
                     }
                 }
                 .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
+            }.tag(0)
+            
+            
+            List {
+                Button {
+//                    DispatchQueue.global(qos: .background).async {
+                        addCompany()
+//                    }
+                    
+                } label: {
+                    Label("Add Item", systemImage: "plus")
                 }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+                ForEach(companys, id: \.self) { item in
+                    HStack {
+                        Text(item.name ?? "")
+                        Text("\(item.location ?? "")")
+                        Text("\(item.person!.count)")
                     }
                 }
-            }
-            Text("Select an item")
+            }.tag(1)
+            
+        }.onAppear {
+//            DispatchQueue.global(qos: .background).async {
+                CoreDataRepository2.shared.fetch(onBackgroundThread: true) { (result: [Person]) in
+                    persons = result
+                }
+                CoreDataRepository2.shared.fetch(onBackgroundThread: true) { (result: [Company]) in
+                    print(companys)
+                    companys = result
+                }
+//            }
         }
     }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+    
+    private func addPerson() {
+        CoreDataRepository2.shared.newEntity(onBackgroundThread: true) { (newCompany: Company) in
+            // 新しいエンティティにデータを設定
+            newCompany.id = UUID()
+            newCompany.name = "Web制作会社"
+            newCompany.location = "東京都"
+            
+            // 新しいエンティティを保存
+            CoreDataRepository2.shared.insert(newCompany, onBackgroundThread: true)
+            
+            CoreDataRepository2.shared.fetch(onBackgroundThread: true) { (result: [Company]) in
+                companys = result
             }
         }
-    }
 
+            
+        
+    }
+    
+    private func addCompany() {
+//        withAnimation {
+//            let newCompany: Company = CoreDataRepository2.shared.newEntity()
+//            newCompany.id = UUID()
+//            newCompany.name = "ABCデザイン"
+//            newCompany.location = "東京都"
+//            
+//            CoreDataRepository2.shared.insert(newCompany)
+//            
+//            companys = CoreDataRepository2.shared.fetch()
+//        }
+    }
+    
     private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
+        
     }
 }
 
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
-
 #Preview {
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+    ContentView()
 }

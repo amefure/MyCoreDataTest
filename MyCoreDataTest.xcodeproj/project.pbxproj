@@ -11,8 +11,10 @@
 		1222B9992B48218200803C59 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1222B9982B48218200803C59 /* ContentView.swift */; };
 		1222B99B2B48218400803C59 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1222B99A2B48218400803C59 /* Assets.xcassets */; };
 		1222B99E2B48218400803C59 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1222B99D2B48218400803C59 /* Preview Assets.xcassets */; };
-		1222B9A02B48218400803C59 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1222B99F2B48218400803C59 /* Persistence.swift */; };
 		1222B9A32B48218400803C59 /* MyCoreDataTest.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1222B9A12B48218400803C59 /* MyCoreDataTest.xcdatamodeld */; };
+		1222B9AA2B48394D00803C59 /* CoreDataRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1222B9A92B48394D00803C59 /* CoreDataRepository.swift */; };
+		1222B9AD2B483B9E00803C59 /* Person+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1222B9AB2B483B9E00803C59 /* Person+CoreDataClass.swift */; };
+		1222B9B12B4ADE8E00803C59 /* Company+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1222B9AF2B4ADE8E00803C59 /* Company+CoreDataClass.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,8 +23,10 @@
 		1222B9982B48218200803C59 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		1222B99A2B48218400803C59 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1222B99D2B48218400803C59 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		1222B99F2B48218400803C59 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		1222B9A22B48218400803C59 /* MyCoreDataTest.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MyCoreDataTest.xcdatamodel; sourceTree = "<group>"; };
+		1222B9A92B48394D00803C59 /* CoreDataRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataRepository.swift; sourceTree = "<group>"; };
+		1222B9AB2B483B9E00803C59 /* Person+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Person+CoreDataClass.swift"; sourceTree = "<group>"; };
+		1222B9AF2B4ADE8E00803C59 /* Company+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Company+CoreDataClass.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,6 +43,8 @@
 		1222B98A2B48218200803C59 = {
 			isa = PBXGroup;
 			children = (
+				1222B9AF2B4ADE8E00803C59 /* Company+CoreDataClass.swift */,
+				1222B9AB2B483B9E00803C59 /* Person+CoreDataClass.swift */,
 				1222B9952B48218200803C59 /* MyCoreDataTest */,
 				1222B9942B48218200803C59 /* Products */,
 			);
@@ -58,7 +64,7 @@
 				1222B9962B48218200803C59 /* MyCoreDataTestApp.swift */,
 				1222B9982B48218200803C59 /* ContentView.swift */,
 				1222B99A2B48218400803C59 /* Assets.xcassets */,
-				1222B99F2B48218400803C59 /* Persistence.swift */,
+				1222B9A92B48394D00803C59 /* CoreDataRepository.swift */,
 				1222B9A12B48218400803C59 /* MyCoreDataTest.xcdatamodeld */,
 				1222B99C2B48218400803C59 /* Preview Content */,
 			);
@@ -143,9 +149,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1222B9AA2B48394D00803C59 /* CoreDataRepository.swift in Sources */,
 				1222B9A32B48218400803C59 /* MyCoreDataTest.xcdatamodeld in Sources */,
-				1222B9A02B48218400803C59 /* Persistence.swift in Sources */,
+				1222B9AD2B483B9E00803C59 /* Person+CoreDataClass.swift in Sources */,
 				1222B9992B48218200803C59 /* ContentView.swift in Sources */,
+				1222B9B12B4ADE8E00803C59 /* Company+CoreDataClass.swift in Sources */,
 				1222B9972B48218200803C59 /* MyCoreDataTestApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
