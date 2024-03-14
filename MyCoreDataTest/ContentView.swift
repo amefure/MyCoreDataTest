@@ -20,18 +20,12 @@ struct ContentView: View {
                     addCompany()
                 }
             } label: {
-                Label("Add Item Person", systemImage: "plus")
+                Label("Add Item Company", systemImage: "plus")
             }
             
             ForEach(companys, id: \.self) { item in
                 HStack {
-                    if let name = item.name {
-                        Text(name)
-                    } else if item.name == "" {
-                        Text("NOne")
-                    } else {
-                        Text("nil")
-                    }
+                    Text(item.name ?? "")
                 }
             }
             .onDelete(perform: deleteItems)
@@ -47,14 +41,14 @@ struct ContentView: View {
     }
     
     private func addCompany() {
-        CoreDataRepository.shared.newEntity(onBackgroundThread: false) { (newCompany: Company) in
+        CoreDataRepository.shared.newEntity(onBackgroundThread: true) { (newCompany: Company) in
             // 新しいエンティティにデータを設定
             newCompany.id = UUID()
             newCompany.name = "Web制作会社"
             newCompany.location = "東京都"
             
             // 新しいエンティティを保存
-            CoreDataRepository.shared.insert(newCompany, onBackgroundThread: false)
+            CoreDataRepository.shared.insert(newCompany, onBackgroundThread: true)
             
             CoreDataRepository.shared.fetch { (result: [Company]) in
                 companys = result
