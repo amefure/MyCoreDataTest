@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		121A9E562BA4606E009B7F48 /* ExCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 121A9E552BA4606E009B7F48 /* ExCollection.swift */; };
 		1222B9972B48218200803C59 /* MyCoreDataTestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1222B9962B48218200803C59 /* MyCoreDataTestApp.swift */; };
 		1222B9992B48218200803C59 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1222B9982B48218200803C59 /* ContentView.swift */; };
 		1222B99B2B48218400803C59 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1222B99A2B48218400803C59 /* Assets.xcassets */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		121A9E552BA4606E009B7F48 /* ExCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExCollection.swift; sourceTree = "<group>"; };
 		1222B9932B48218200803C59 /* MyCoreDataTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyCoreDataTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1222B9962B48218200803C59 /* MyCoreDataTestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCoreDataTestApp.swift; sourceTree = "<group>"; };
 		1222B9982B48218200803C59 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -40,6 +42,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		121A9E542BA46057009B7F48 /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				121A9E552BA4606E009B7F48 /* ExCollection.swift */,
+			);
+			path = Extension;
+			sourceTree = "<group>";
+		};
+		121A9E572BA4607B009B7F48 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				1222B9962B48218200803C59 /* MyCoreDataTestApp.swift */,
+				1222B9982B48218200803C59 /* ContentView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		121A9E582BA4608B009B7F48 /* Repository */ = {
+			isa = PBXGroup;
+			children = (
+				1222B9A92B48394D00803C59 /* CoreDataRepository.swift */,
+			);
+			path = Repository;
+			sourceTree = "<group>";
+		};
 		1222B98A2B48218200803C59 = {
 			isa = PBXGroup;
 			children = (
@@ -61,10 +88,10 @@
 		1222B9952B48218200803C59 /* MyCoreDataTest */ = {
 			isa = PBXGroup;
 			children = (
-				1222B9962B48218200803C59 /* MyCoreDataTestApp.swift */,
-				1222B9982B48218200803C59 /* ContentView.swift */,
+				121A9E572BA4607B009B7F48 /* View */,
+				121A9E582BA4608B009B7F48 /* Repository */,
+				121A9E542BA46057009B7F48 /* Extension */,
 				1222B99A2B48218400803C59 /* Assets.xcassets */,
-				1222B9A92B48394D00803C59 /* CoreDataRepository.swift */,
 				1222B9A12B48218400803C59 /* MyCoreDataTest.xcdatamodeld */,
 				1222B99C2B48218400803C59 /* Preview Content */,
 			);
@@ -150,6 +177,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1222B9AA2B48394D00803C59 /* CoreDataRepository.swift in Sources */,
+				121A9E562BA4606E009B7F48 /* ExCollection.swift in Sources */,
 				1222B9A32B48218400803C59 /* MyCoreDataTest.xcdatamodeld in Sources */,
 				1222B9AD2B483B9E00803C59 /* Person+CoreDataClass.swift in Sources */,
 				1222B9992B48218200803C59 /* ContentView.swift in Sources */,

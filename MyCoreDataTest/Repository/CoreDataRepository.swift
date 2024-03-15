@@ -43,7 +43,7 @@ class CoreDataRepository {
         let context = onBackgroundThread ? makeBackgroundContext() : makeContext()
         context.perform {
             let entity = NSEntityDescription.entity(forEntityName: String(describing: T.self), in: context)!
-            let newObject = T(entity: entity, insertInto: nil)
+            let newObject = T(entity: entity, insertInto: context)
             completion(newObject)
         }
     }
@@ -61,7 +61,7 @@ class CoreDataRepository {
     
     /// 追加処理
     public func insert(_ object: NSManagedObject, onBackgroundThread: Bool = false) {
-        let context = onBackgroundThread ? makeBackgroundContext() : makeContext()
+        let context = onBackgroundThread ? object.managedObjectContext ?? makeBackgroundContext() : makeContext()
         saveContext(context)
     }
     
@@ -83,13 +83,18 @@ class CoreDataRepository {
         guard context.hasChanges else { return }
         do {
             try context.save()
-            
         } catch let error as NSError {
             fatalError("Unresolved error \(error), \(error.userInfo)")
         }
     }
 
-    /// 取得処理：fetchはContextを切り分ける必要がない？
+}
+
+
+extension CoreDataRepository {
+    // MARK: - fetchはContextを切り分ける必要がない？
+    
+    /// ALLData取得処理1：完了ハンドラーVer
     public func fetch<T: NSManagedObject>(completion: @escaping ([T]) -> Void) {
         let context = makeContext()
         let fetchRequest = NSFetchRequest<T>(entityName: String(describing: T.self))
@@ -105,37 +110,12 @@ class CoreDataRepository {
         }
     }
     
-    
-//    public func fetch<T: NSManagedObject>() -> [T] {
-//        let context = makeContext()
-//        let fetchRequest = NSFetchRequest<T>(entityName: String(describing: T.self))
-//        var result: [T] = []
-//        context.performAndWait {
-//            do {
-//                let fetchedObjects = try context.fetch(fetchRequest)
-//                result = fetchedObjects
-//            } catch let error as NSError {
-//                print("Could not fetch. \(error), \(error.userInfo)")
-//                
-//            }
-//        }
-//        return result
-//    }
-//
-
-    
+    /// ALLData取得処理1：返り値Ver
     public func fetch<T: NSManagedObject>() -> [T] {
         let context = makeContext()
         let fetchRequest = NSFetchRequest<T>(entityName: String(describing: T.self))
         var result: [T] = []
-        
-        let group = DispatchGroup()
-        group.enter()
-        context.perform {
-            defer {
-                group.leave()
-            }
-            
+        context.performAndWait {
             do {
                 let fetchedObjects = try context.fetch(fetchRequest)
                 result = fetchedObjects
@@ -143,13 +123,11 @@ class CoreDataRepository {
                 print("Could not fetch. \(error), \(error.userInfo)")
             }
         }
-        group.wait()
-        
         return result
     }
 
     
-    /// 取得処理：fetchはContextを切り分ける必要がない？
+    /// SingleDate取得処理：完了ハンドラーVer
     public func fetchSingle<T: NSManagedObject>(predicate: NSPredicate? = nil, sorts: [NSSortDescriptor]? = nil, completion: @escaping (T?) -> Void) {
         let context = makeContext()
         let fetchRequest = NSFetchRequest<T>(entityName: String(describing: T.self))
@@ -176,5 +154,34 @@ class CoreDataRepository {
             }
             completion(nil)
         }
+    }
+    
+    /// SingleDate取得処理：返り値Ver
+    public func fetchSingle<T: NSManagedObject>(predicate: NSPredicate? = nil, sorts: [NSSortDescriptor]? = nil) -> T {
+        let context = makeContext()
+        let fetchRequest = NSFetchRequest<T>(entityName: String(describing: T.self))
+
+        var result: T!
+        context.perform {
+            // フィルタリング
+            if let predicate = predicate {
+                fetchRequest.predicate = predicate
+            }
+            
+            // ソート
+            if let sorts = sorts {
+                fetchRequest.sortDescriptors = sorts
+            }
+            
+            do {
+                let entitys = try context.fetch(fetchRequest)
+                if let entity = entitys.first {
+                    result = entity
+                }
+            } catch let error as NSError {
+                print("Could not fetch. \(error), \(error.userInfo)")
+            }
+        }
+        return result
     }
 }
