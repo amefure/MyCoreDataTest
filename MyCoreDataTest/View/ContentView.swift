@@ -10,6 +10,7 @@ import CoreData
 
 struct ContentView: View {
     
+    private let repository = CoreDataRepository.shared
     @State private var companys: Array<Company> = []
     
     var body: some View {
@@ -40,7 +41,7 @@ struct ContentView: View {
             
         }.onAppear {
             DispatchQueue(label: "com.amefure.queue", qos: .background).async {
-                CoreDataRepository.shared.fetch { (result: [Company]) in
+                repository.fetch { (result: [Company]) in
                     companys = result
                 }
             }
@@ -51,19 +52,19 @@ struct ContentView: View {
         // この形式だとidプロパティを変更時にスレッド違反でクラッシュしてしまう
         // 明示的にスレッドを指定すればすり抜けるがsaveContext > context.hasChanges で
         // 「EXC_BREAKPOINT (code=1, subcode=0x1863133d4)」 になる
-        // let newCompany: Company = CoreDataRepository.shared.newEntity(onBackgroundThread: true)
+        // let newCompany: Company = repository.newEntity(onBackgroundThread: true)
         // newCompany.id = UUID()
         
-        CoreDataRepository.shared.newEntityBG() { (newCompany: Company) in
+        repository.newEntity() { (newCompany: Company) in
             // 新しいエンティティにデータを設定
             newCompany.id = UUID()
             newCompany.name = DateFormatUtility().getString(date: Date())
             newCompany.location = "東京都"
             
             // 新しいエンティティを保存
-            CoreDataRepository.shared.insert(newCompany, onBackgroundThread: true)
+            repository.insert(newCompany, onBackgroundThread: true)
             
-            CoreDataRepository.shared.fetch { (result: [Company]) in
+            repository.fetch { (result: [Company]) in
                 companys = result
             }
         }
@@ -72,14 +73,14 @@ struct ContentView: View {
     private func updateCompany(index: Int) {
         // バックグラウンドスレッドからContentView > companysオブジェクトを参照した時点でクラッシュする
         // そのためバックグラウンドスレッドでデータを取得して参照
-        CoreDataRepository.shared.fetch { (result: [Company]) in
+        repository.fetch { (result: [Company]) in
             guard let id = result[safe: index]?.id else { return }
             let predicate = NSPredicate(format: "id == %@", id as CVarArg)
-            let company: Company = CoreDataRepository.shared.fetchSingle(predicate: predicate)
+            let company: Company = repository.fetchSingle(predicate: predicate)
             company.name = DateFormatUtility().getString(date: Date())
-            CoreDataRepository.shared.update(onBackgroundThread: false)
+            repository.update(onBackgroundThread: false)
             
-            CoreDataRepository.shared.fetch { (result: [Company]) in
+            repository.fetch { (result: [Company]) in
                 // ここで更新してもUIは反映されない(メイン/バックグラウンドでも)
                 companys = result
             }
@@ -89,10 +90,10 @@ struct ContentView: View {
     private func deleteItems(at offsets: IndexSet) {
         for index in offsets {
             let companyToDelete = companys[index]
-            CoreDataRepository.shared.delete(companyToDelete)
+            repository.delete(companyToDelete)
         }
         
-        CoreDataRepository.shared.fetch { (result: [Company]) in
+        repository.fetch { (result: [Company]) in
             companys = result
         }
     }
