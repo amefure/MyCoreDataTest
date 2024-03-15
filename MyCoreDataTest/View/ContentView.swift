@@ -8,9 +8,6 @@
 import SwiftUI
 import CoreData
 
-// TODO: -
-/// バックグラウンドでのUpdate
-// TODO: -
 struct ContentView: View {
     
     @State private var companys: Array<Company> = []
@@ -27,9 +24,9 @@ struct ContentView: View {
             }
             
             Button {
-//                DispatchQueue(label: "com.amefure.queue", qos: .background).async {
+                DispatchQueue(label: "com.amefure.queue", qos: .background).async {
                     updateCompany(index: 0)
-//                }
+                }
             } label: {
                 Label("Update Company", systemImage: "plus")
             }
@@ -57,7 +54,7 @@ struct ContentView: View {
         // let newCompany: Company = CoreDataRepository.shared.newEntity(onBackgroundThread: true)
         // newCompany.id = UUID()
         
-        CoreDataRepository.shared.newEntity(onBackgroundThread: true) { (newCompany: Company) in
+        CoreDataRepository.shared.newEntityBG() { (newCompany: Company) in
             // 新しいエンティティにデータを設定
             newCompany.id = UUID()
             newCompany.name = DateFormatUtility().getString(date: Date())
@@ -72,16 +69,20 @@ struct ContentView: View {
         }
     }
     
-    /// バックグラウンドでアップデートできない？
     private func updateCompany(index: Int) {
-        guard let id = companys[safe: index]?.id else { return }
-        let predicate = NSPredicate(format: "id == %@", id as CVarArg)
-        let company: Company = CoreDataRepository.shared.fetchSingle(predicate: predicate)
-        company.name = DateFormatUtility().getString(date: Date())
-        CoreDataRepository.shared.update(onBackgroundThread: false)
-        
+        // バックグラウンドスレッドからContentView > companysオブジェクトを参照した時点でクラッシュする
+        // そのためバックグラウンドスレッドでデータを取得して参照
         CoreDataRepository.shared.fetch { (result: [Company]) in
-            companys = result
+            guard let id = result[safe: index]?.id else { return }
+            let predicate = NSPredicate(format: "id == %@", id as CVarArg)
+            let company: Company = CoreDataRepository.shared.fetchSingle(predicate: predicate)
+            company.name = DateFormatUtility().getString(date: Date())
+            CoreDataRepository.shared.update(onBackgroundThread: false)
+            
+            CoreDataRepository.shared.fetch { (result: [Company]) in
+                // ここで更新してもUIは反映されない(メイン/バックグラウンドでも)
+                companys = result
+            }
         }
     }
     

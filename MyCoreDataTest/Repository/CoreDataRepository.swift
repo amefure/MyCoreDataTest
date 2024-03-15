@@ -37,8 +37,16 @@ class CoreDataRepository {
         context.automaticallyMergesChangesFromParent = true
         return context
     }
+}
+
+// MARK: - Create
+extension CoreDataRepository {
+    // MARK: - 返り値はメインスレッドでないと使えない？
     
-    /// 新規作成
+    // perform/performAndWaitは処理の重さによって切り替える
+    // https://appdev-room.com/swift-core-data-perform
+    
+    /// 新規作成：perform 完了ハンドラー Ver
     public func newEntity<T: NSManagedObject>(onBackgroundThread: Bool = false, completion: @escaping (T) -> Void) {
         let context = onBackgroundThread ? makeBackgroundContext() : makeContext()
         context.perform {
@@ -48,9 +56,9 @@ class CoreDataRepository {
         }
     }
     
+    /// 新規作成：performAndWait 返り値 Ver
     public func newEntity<T: NSManagedObject>(onBackgroundThread: Bool = false) -> T {
         let context = onBackgroundThread ? makeBackgroundContext() : makeContext()
-        print("---------------entity",Thread.current)
         var result: T!
         context.performAndWait {
             let entity = NSEntityDescription.entity(forEntityName: String(describing: T.self), in: context)!
@@ -59,6 +67,21 @@ class CoreDataRepository {
         return result
     }
     
+    
+    /// 新規作成：performBackgroundTask 完了ハンドラー Ver
+    public func newEntityBG<T: NSManagedObject>(completion: @escaping (T) -> Void) {
+        persistentContainer.performBackgroundTask { context in
+            let entity = NSEntityDescription.entity(forEntityName: String(describing: T.self), in: context)!
+            let newObject = T(entity: entity, insertInto: context)
+            completion(newObject)
+        }
+    }
+    
+}
+
+// MARK: - Insert/Update/Delete
+extension CoreDataRepository {
+
     /// 追加処理
     public func insert(_ object: NSManagedObject, onBackgroundThread: Bool = false) {
         let context = onBackgroundThread ? object.managedObjectContext ?? makeBackgroundContext() : makeContext()
@@ -77,7 +100,11 @@ class CoreDataRepository {
         context.delete(object)
         saveContext(context)
     }
-    
+}
+
+
+// MARK: - Save
+extension CoreDataRepository {
     /// Contextに応じたSave
     private func saveContext(_ context: NSManagedObjectContext) {
         guard context.hasChanges else { return }
@@ -87,14 +114,14 @@ class CoreDataRepository {
             fatalError("Unresolved error \(error), \(error.userInfo)")
         }
     }
-
 }
 
 
+// MARK: - 取得
 extension CoreDataRepository {
     // MARK: - fetchはContextを切り分ける必要がない？
     
-    // perform/は処理の重さによって切り替える
+    // perform/performAndWaitは処理の重さによって切り替える
     // ・完了ハンドラー：非同期処理(重ための処理)
     // ・返り値　　　　：同期処理(軽めの処理)
     // https://appdev-room.com/swift-core-data-perform
