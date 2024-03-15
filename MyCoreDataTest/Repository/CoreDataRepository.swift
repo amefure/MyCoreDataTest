@@ -94,6 +94,11 @@ class CoreDataRepository {
 extension CoreDataRepository {
     // MARK: - fetchはContextを切り分ける必要がない？
     
+    // perform/は処理の重さによって切り替える
+    // ・完了ハンドラー：非同期処理(重ための処理)
+    // ・返り値　　　　：同期処理(軽めの処理)
+    // https://appdev-room.com/swift-core-data-perform
+    
     /// ALLData取得処理1：完了ハンドラーVer
     public func fetch<T: NSManagedObject>(completion: @escaping ([T]) -> Void) {
         let context = makeContext()
@@ -110,59 +115,13 @@ extension CoreDataRepository {
         }
     }
     
-    /// ALLData取得処理1：返り値Ver
-    public func fetch<T: NSManagedObject>() -> [T] {
-        let context = makeContext()
-        let fetchRequest = NSFetchRequest<T>(entityName: String(describing: T.self))
-        var result: [T] = []
-        context.performAndWait {
-            do {
-                let fetchedObjects = try context.fetch(fetchRequest)
-                result = fetchedObjects
-            } catch let error as NSError {
-                print("Could not fetch. \(error), \(error.userInfo)")
-            }
-        }
-        return result
-    }
-
-    
-    /// SingleDate取得処理：完了ハンドラーVer
-    public func fetchSingle<T: NSManagedObject>(predicate: NSPredicate? = nil, sorts: [NSSortDescriptor]? = nil, completion: @escaping (T?) -> Void) {
-        let context = makeContext()
-        let fetchRequest = NSFetchRequest<T>(entityName: String(describing: T.self))
-
-        context.perform {
-            // フィルタリング
-            if let predicate = predicate {
-                fetchRequest.predicate = predicate
-            }
-            
-            // ソート
-            if let sorts = sorts {
-                fetchRequest.sortDescriptors = sorts
-            }
-            
-            do {
-                let entitys = try context.fetch(fetchRequest)
-                if let entity = entitys.first {
-                    completion(entity)
-                }
-            } catch let error as NSError {
-                print("Could not fetch. \(error), \(error.userInfo)")
-                completion(nil)
-            }
-            completion(nil)
-        }
-    }
-    
     /// SingleDate取得処理：返り値Ver
     public func fetchSingle<T: NSManagedObject>(predicate: NSPredicate? = nil, sorts: [NSSortDescriptor]? = nil) -> T {
         let context = makeContext()
         let fetchRequest = NSFetchRequest<T>(entityName: String(describing: T.self))
 
         var result: T!
-        context.perform {
+        context.performAndWait {
             // フィルタリング
             if let predicate = predicate {
                 fetchRequest.predicate = predicate

@@ -8,17 +8,16 @@
 import SwiftUI
 import CoreData
 
+// TODO: -
+/// バックグラウンドでのUpdate
+// TODO: -
 struct ContentView: View {
     
-    @State private var name: String = ""
     @State private var companys: Array<Company> = []
     
     var body: some View {
         
         List {
-            
-            TextField("Input", text: $name)
-            
             Button {
                 DispatchQueue(label: "com.amefure.queue", qos: .background).async {
                     addCompany()
@@ -44,32 +43,24 @@ struct ContentView: View {
             
         }.onAppear {
             DispatchQueue(label: "com.amefure.queue", qos: .background).async {
-                companys = CoreDataRepository.shared.fetch()
+                CoreDataRepository.shared.fetch { (result: [Company]) in
+                    companys = result
+                }
             }
         }
     }
     
     private func addCompany() {
-        guard !name.isEmpty else { return }
-        //        let newCompany: Company = CoreDataRepository.shared.newEntity(onBackgroundThread: true)
-        //        // エンティティをバックグラウンドスレッドで生成したので、そのスレッドでデータを設定する
-        //
-        //        print("---------------Company",Thread.current)
-        //        newCompany.id = UUID()
-        //        newCompany.name = name
-        //        newCompany.location = "東京都"
-        //
-        //        // 新しいエンティティを保存
-        //        CoreDataRepository.shared.insert(newCompany, onBackgroundThread: true)
-        //
-        //        CoreDataRepository.shared.fetch { (result: [Company]) in
-        //            companys = result
-        //        }
+        // この形式だとidプロパティを変更時にスレッド違反でクラッシュしてしまう
+        // 明示的にスレッドを指定すればすり抜けるがsaveContext > context.hasChanges で
+        // 「EXC_BREAKPOINT (code=1, subcode=0x1863133d4)」 になる
+        // let newCompany: Company = CoreDataRepository.shared.newEntity(onBackgroundThread: true)
+        // newCompany.id = UUID()
         
         CoreDataRepository.shared.newEntity(onBackgroundThread: true) { (newCompany: Company) in
             // 新しいエンティティにデータを設定
             newCompany.id = UUID()
-            newCompany.name = name
+            newCompany.name = DateFormatUtility().getString(date: Date())
             newCompany.location = "東京都"
             
             // 新しいエンティティを保存
@@ -83,14 +74,14 @@ struct ContentView: View {
     
     /// バックグラウンドでアップデートできない？
     private func updateCompany(index: Int) {
-        guard let company = companys[safe: index] else { return }
-        let predicate = NSPredicate(format: "id == %@", company.id! as CVarArg)
-        CoreDataRepository.shared.fetchSingle(predicate: predicate) { (company: Company?) in
-            guard let company = company else { return }
-            company.name = String(Date().timeIntervalSince1970)
-            CoreDataRepository.shared.update(onBackgroundThread: false)
-            
-            companys = CoreDataRepository.shared.fetch()
+        guard let id = companys[safe: index]?.id else { return }
+        let predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        let company: Company = CoreDataRepository.shared.fetchSingle(predicate: predicate)
+        company.name = DateFormatUtility().getString(date: Date())
+        CoreDataRepository.shared.update(onBackgroundThread: false)
+        
+        CoreDataRepository.shared.fetch { (result: [Company]) in
+            companys = result
         }
     }
     
@@ -99,7 +90,10 @@ struct ContentView: View {
             let companyToDelete = companys[index]
             CoreDataRepository.shared.delete(companyToDelete)
         }
-        companys = CoreDataRepository.shared.fetch()
+        
+        CoreDataRepository.shared.fetch { (result: [Company]) in
+            companys = result
+        }
     }
 }
 
