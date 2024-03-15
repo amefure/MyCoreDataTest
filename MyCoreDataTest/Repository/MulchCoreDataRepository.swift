@@ -7,14 +7,14 @@
 
 import CoreData
 
-class CoreDataRepository {
+class MulchCoreDataRepository {
     
-    static let shared = CoreDataRepository()
+    static let shared = MulchCoreDataRepository()
     
     private static let persistentName = "MyCoreDataTest"
     
     private lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: CoreDataRepository.persistentName)
+        let container = NSPersistentContainer(name: MulchCoreDataRepository.persistentName)
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
@@ -40,7 +40,7 @@ class CoreDataRepository {
 }
 
 // MARK: - Create
-extension CoreDataRepository {
+extension MulchCoreDataRepository {
     // MARK: - 返り値はメインスレッドでないと使えない？
     
     // perform/performAndWaitは処理の重さによって切り替える
@@ -80,7 +80,7 @@ extension CoreDataRepository {
 }
 
 // MARK: - Insert/Update/Delete
-extension CoreDataRepository {
+extension MulchCoreDataRepository {
 
     /// 追加処理
     public func insert(_ object: NSManagedObject, onBackgroundThread: Bool = false) {
@@ -104,7 +104,7 @@ extension CoreDataRepository {
 
 
 // MARK: - Save
-extension CoreDataRepository {
+extension MulchCoreDataRepository {
     /// Contextに応じたSave
     private func saveContext(_ context: NSManagedObjectContext) {
         guard context.hasChanges else { return }
@@ -118,7 +118,7 @@ extension CoreDataRepository {
 
 
 // MARK: - 取得
-extension CoreDataRepository {
+extension MulchCoreDataRepository {
     // MARK: - fetchはContextを切り分ける必要がない？
     
     // perform/performAndWaitは処理の重さによって切り替える

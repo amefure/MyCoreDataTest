@@ -8,9 +8,9 @@
 import SwiftUI
 import CoreData
 
-struct ContentView: View {
+struct MulchListView: View {
     
-    private let repository = CoreDataRepository.shared
+    private let repository = MulchCoreDataRepository.shared
     @State private var companys: Array<Company> = []
     
     var body: some View {
@@ -100,5 +100,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    MulchListView()
 }
