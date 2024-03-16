@@ -40,10 +40,21 @@ struct MulchListView: View {
             .onDelete(perform: deleteItems)
             
         }.onAppear {
+            // (1) メインスレッドでのUI反映はこれ
+            // companys = repository.fetch()
+            
+            
             DispatchQueue(label: "com.amefure.queue", qos: .background).async {
-                repository.fetch { (result: [Company]) in
-                    companys = result
-                }
+                // (2) バックグラウンドスレッドでのUI反映はこれ
+                companys = repository.fetchBG()
+                
+                // BGでこの形式ではプロパティがnullになる(BGContext & perform)
+                // repository.fetchBGNone { (result: [Company]) in
+                //    companys = result
+                // }
+                
+                // BGでこの形式はクラッシュする(mainContext & perform未使用メソッド)
+                // companys = repository.fetch()
             }
         }
     }
@@ -52,38 +63,46 @@ struct MulchListView: View {
         // この形式だとidプロパティを変更時にスレッド違反でクラッシュしてしまう
         // 明示的にスレッドを指定すればすり抜けるがsaveContext > context.hasChanges で
         // 「EXC_BREAKPOINT (code=1, subcode=0x1863133d4)」 になる
+        // performAndWaitで取得したものは変更できない？
+        // -------------------------------------------------------------------------
         // let newCompany: Company = repository.newEntity(onBackgroundThread: true)
         // newCompany.id = UUID()
         
-        repository.newEntity() { (newCompany: Company) in
+        // onBackgroundThreadをtrueにしなくてもクラッシュしない？
+        repository.newEntity(onBackgroundThread: true) { (newCompany: Company) in
             // 新しいエンティティにデータを設定
             newCompany.id = UUID()
             newCompany.name = DateFormatUtility().getString(date: Date())
             newCompany.location = "東京都"
             
             // 新しいエンティティを保存
-            repository.insert(newCompany, onBackgroundThread: true)
+            repository.insert(newCompany)
             
-            repository.fetch { (result: [Company]) in
-                companys = result
-            }
+            companys = repository.fetchBG()
         }
     }
     
     private func updateCompany(index: Int) {
-        // バックグラウンドスレッドからContentView > companysオブジェクトを参照した時点でクラッシュする
-        // そのためバックグラウンドスレッドでデータを取得して参照
-        repository.fetch { (result: [Company]) in
+        // insert同様にこの形式だとidプロパティを参照時にスレッド違反でクラッシュしてしまう
+        // performAndWaitで取得したものは変更できない？
+        // -------------------------------------------------------------------------
+        //  let result: [Company] = repository.fetchBG()
+        // guard let id = result[safe: index]?.id else { return }
+        
+        // また MulchListView > companysをそのまま参照しようとしてもクラッシュするので注意
+        
+        // 完了ハンドラー形式なら問題なく実装可能
+        repository.fetchBG { (result: [Company]) in
             guard let id = result[safe: index]?.id else { return }
             let predicate = NSPredicate(format: "id == %@", id as CVarArg)
             let company: Company = repository.fetchSingle(predicate: predicate)
             company.name = DateFormatUtility().getString(date: Date())
-            repository.update(onBackgroundThread: true)
-            
-            repository.fetch { (result: [Company]) in
-                // ここで更新してもUIは反映されない(メイン/バックグラウンドでも)
-                companys = result
-            }
+            // fetchしているContextに合わせたContextでupdate処理を実行しなければいけないので注意
+            repository.update(company)
+
+            // ここでそのまま更新してもUIは反映されないため明示的にリセット
+            companys = []
+            companys = repository.fetchBG()
         }
     }
     
@@ -93,9 +112,7 @@ struct MulchListView: View {
             repository.delete(companyToDelete)
         }
         
-        repository.fetch { (result: [Company]) in
-            companys = result
-        }
+        companys = repository.fetchBG()
     }
 }
 

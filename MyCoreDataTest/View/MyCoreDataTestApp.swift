@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct MyCoreDataTestApp: App {
-    private var mulch = false
+    private var mulch = true
     var body: some Scene {
         WindowGroup {
             if mulch {
