@@ -69,6 +69,8 @@ extension MulchCoreDataRepository {
     
     
     /// 新規作成：performBackgroundTask 完了ハンドラー Ver
+    /// performBackgroundTask メソッドは単発でバックグラウンドで行いたい処理があるときに使用する
+    /// 生成したContextはクロージャーを抜けると破棄される
     public func newEntityBG<T: NSManagedObject>(completion: @escaping (T) -> Void) {
         persistentContainer.performBackgroundTask { context in
             let entity = NSEntityDescription.entity(forEntityName: String(describing: T.self), in: context)!

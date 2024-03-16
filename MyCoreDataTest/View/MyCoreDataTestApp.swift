@@ -9,9 +9,14 @@ import SwiftUI
 
 @main
 struct MyCoreDataTestApp: App {
+    private var mulch = false
     var body: some Scene {
         WindowGroup {
-            MainListView()
+            if mulch {
+                MulchListView()
+            } else {
+                MainListView()
+            }
         }
     }
 }

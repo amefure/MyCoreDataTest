@@ -78,7 +78,7 @@ struct MulchListView: View {
             let predicate = NSPredicate(format: "id == %@", id as CVarArg)
             let company: Company = repository.fetchSingle(predicate: predicate)
             company.name = DateFormatUtility().getString(date: Date())
-            repository.update(onBackgroundThread: false)
+            repository.update(onBackgroundThread: true)
             
             repository.fetch { (result: [Company]) in
                 // ここで更新してもUIは反映されない(メイン/バックグラウンドでも)
